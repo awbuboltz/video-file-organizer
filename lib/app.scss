@@ -1,6 +1,17 @@
-table.linksholder {
-  a {
-    color: black;
+#explorer {
+  > div {
+    padding: 0.25em 0;
+
+    span {
+      text-decoration: underline;
+      margin-left: 0.5em;
+      cursor: pointer;
+
+      &.disabled {
+        text-decoration: none;
+        cursor: default;
+      }
+    }
   }
 }
 

@@ -1,5 +1,12 @@
-table.linksholder a {
-  color: black; }
+#explorer > div {
+  padding: 0.25em 0; }
+  #explorer > div span {
+    text-decoration: underline;
+    margin-left: 0.5em;
+    cursor: pointer; }
+    #explorer > div span.disabled {
+      text-decoration: none;
+      cursor: default; }
 
 div.dataTables_filter label {
   float: right;

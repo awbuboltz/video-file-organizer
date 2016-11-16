@@ -23,13 +23,13 @@ app
                 try {
                     const isDirectory = fs.statSync(path.join(currentDir, file)).isDirectory(),
                         dataFile = {
-                            Name: file,
-                            Path: path.join(query, file),
-                            IsDirectory: isDirectory
+                            name: file,
+                            path: path.join(query, file),
+                            isDirectory: isDirectory
                         };
 
                     if (!isDirectory) {
-                        dataFile.Ext = path.extname(file);
+                        dataFile.ext = path.extname(file);
                     }
 
                     data.push(dataFile);
@@ -41,7 +41,7 @@ app
 
             // sort by name
             data = _.sortBy(data, f => {
-                return f.Name
+                return f.name
             });
 
             res.json(data);
