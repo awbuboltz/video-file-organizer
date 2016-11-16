@@ -10,8 +10,9 @@ app
     .use(express.static(process.cwd())) // app public directory
     .use(express.static(__dirname)) // module directory
     .get('/files', (req, res) => {
-        const query = req.query.path || '',
-            currentDir = query ? path.join(rootDir, query) : rootDir;
+        const filePath = req.query.path || '',
+            filterVideos = req.query.filterVideos || false,
+            currentDir = filePath ? path.join(rootDir, filePath) : rootDir;
 
         fs.readdir(currentDir, (err, files) => {
             if (err) {
@@ -24,7 +25,7 @@ app
                     const isDirectory = fs.statSync(path.join(currentDir, file)).isDirectory(),
                         dataFile = {
                             name: file,
-                            path: path.join(query, file),
+                            path: path.join(filePath, file),
                             isDirectory: isDirectory
                         };
 
@@ -53,3 +54,29 @@ app
     .listen(8080, () => {
         console.log(`Server running at http://localhost:8080`);
     });
+
+function findBadFiles() {
+    console.log('Finding bad file extensions..');
+
+    const walker = walk.walk('F:\\TV Shows', {followLinks: false}),
+        files = new Set(),
+        validFileTypes = ['.avi', '.flv', '.divx', '.m4v', '.mkv', '.mp4', '.wmv'];
+
+    walker.on('file', (root, stat, next) => {
+        // Add this file to the list of files
+        const name = stat.name,
+            ext = path.extname(name);
+
+        if (validFileTypes.indexOf(ext) === -1) {
+            files.add(`${root}\\${name}`);
+        }
+        next();
+    });
+
+    walker.on('end', function () {
+        console.log(files.size ? 'Bad extensions found:' : 'All file extesions are valid');
+        for (let item of files) {
+            console.log(item);
+        }
+    });
+}
