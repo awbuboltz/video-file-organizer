@@ -4,36 +4,31 @@ const _ = require('lodash'),
     fs = require('fs'),
     path = require('path'),
     app = express(),
+    walk = require('walk'),
     rootDir = 'C:\\Users\\Andy\\Torrents';
 
 app
     .use(express.static(process.cwd())) // app public directory
     .use(express.static(__dirname)) // module directory
+    .get('/', (req, res) => {
+        res.redirect('lib/index.html');
+    })
     .get('/files', (req, res) => {
         const filePath = req.query.path || '',
-            filterVideos = req.query.filterVideos || false,
             currentDir = filePath ? path.join(rootDir, filePath) : rootDir;
+
+        let data = [];
 
         fs.readdir(currentDir, (err, files) => {
             if (err) {
                 throw err;
             }
 
-            let data = [];
             files.forEach(file => {
                 try {
-                    const isDirectory = fs.statSync(path.join(currentDir, file)).isDirectory(),
-                        dataFile = {
-                            name: file,
-                            path: path.join(filePath, file),
-                            isDirectory: isDirectory
-                        };
+                    const isDirectory = fs.statSync(path.join(currentDir, file)).isDirectory();
 
-                    if (!isDirectory) {
-                        dataFile.ext = path.extname(file);
-                    }
-
-                    data.push(dataFile);
+                    data.push(directoryItem(file, filePath, isDirectory));
                 }
                 catch (e) {
                     console.log(e);
@@ -48,35 +43,62 @@ app
             res.json(data);
         });
     })
-    .get('/', (req, res) => {
-        res.redirect('lib/index.html');
+    .get('/filter', (req, res) => {
+        const filePath = req.query.path || '',
+            currentDir = filePath ? path.join(rootDir, filePath) : rootDir;
+
+        walk2(currentDir, (err, results) => {
+            res.json(results);
+        });
     })
     .listen(8080, () => {
         console.log(`Server running at http://localhost:8080`);
     });
 
-function findBadFiles() {
-    console.log('Finding bad file extensions..');
+function walk2(dir, done) {
+    let results = [];
 
-    const walker = walk.walk('F:\\TV Shows', {followLinks: false}),
-        files = new Set(),
-        validFileTypes = ['.avi', '.flv', '.divx', '.m4v', '.mkv', '.mp4', '.wmv'];
-
-    walker.on('file', (root, stat, next) => {
-        // Add this file to the list of files
-        const name = stat.name,
-            ext = path.extname(name);
-
-        if (validFileTypes.indexOf(ext) === -1) {
-            files.add(`${root}\\${name}`);
+    fs.readdir(dir, (err, files) => {
+        if (err) {
+            return done(err);
         }
-        next();
-    });
 
-    walker.on('end', function () {
-        console.log(files.size ? 'Bad extensions found:' : 'All file extesions are valid');
-        for (let item of files) {
-            console.log(item);
-        }
+        let i = 0;
+
+        (function next() {
+            let fileName = files[i++];
+
+            if (!fileName) {
+                return done(null, results);
+            }
+
+            let filePath = dir + '/' + fileName;
+
+            fs.stat(filePath, (err, stat) => {
+                if (stat && stat.isDirectory()) {
+                    walk2(filePath, (err, res) => {
+                        results = results.concat(res);
+                        next();
+                    });
+                }
+                else {
+                    let dirItem = directoryItem(fileName, filePath, false);
+                    // only push video files
+                    if (['.avi', '.flv', '.divx', '.m4v', '.mkv', '.mp4', '.wmv'].indexOf(dirItem.ext) > -1) {
+                        results.push(dirItem);
+                    }
+                    next();
+                }
+            });
+        })();
     });
+}
+
+function directoryItem(name, filePath, isDir) {
+    return {
+        name: name,
+        path: path.join(filePath, name),
+        isDirectory: isDir,
+        ext: isDir ? null : path.extname(name)
+    };
 }
