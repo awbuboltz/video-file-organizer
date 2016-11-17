@@ -1,3 +1,12 @@
+body {
+  margin: 1em; }
+
+div.panel-heading h4 {
+  display: inline;
+  vertical-align: middle; }
+  div.panel-heading h4 span.badge {
+    margin-left: 0.5em; }
+
 #explorer > div {
   padding: 0.25em 0; }
   #explorer > div span {
@@ -7,24 +16,5 @@
     #explorer > div span.disabled {
       text-decoration: none;
       cursor: default; }
-
-div.dataTables_filter label {
-  float: right;
-  font-weight: normal;
-  position: absolute;
-  top: 10px;
-  right: 5px; }
-
-div.dataTables_info {
-  margin-top: 10px;
-  background: ghostwhite; }
-
-span.up {
-  margin-left: 20px;
-  border: solid 1px black;
-  cursor: pointer;
-  width: 100px;
-  padding-left: 10px;
-  padding-right: 10px; }
 
 /*# sourceMappingURL=app.css.map */
