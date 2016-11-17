@@ -2,6 +2,7 @@
 const _ = require('lodash'),
     express = require('express'),
     fs = require('fs'),
+    glob = require('glob'),
     path = require('path'),
     app = express(),
     // read in config file as json
@@ -12,7 +13,6 @@ const _ = require('lodash'),
 
 app
     .use(express.static(process.cwd())) // app public directory
-    .use(express.static(__dirname)) // module directory
     .get('/', (req, res) => {
         res.redirect('lib/index.html');
     })
@@ -52,52 +52,16 @@ app
     .get('/filter', (req, res) => {
         const currentDir = getCurrentDir(req.query.path);
 
-        crawl(currentDir, (err, results) => {
-            res.json({path: currentDir, files: results});
-        });
-
-        function crawl(dir, done) {
-            let results = [];
-
-            fs.readdir(dir, (err, files) => {
-                if (err) {
-                    return done(err);
-                }
-
-                let i = 0;
-
-                (function next() {
-                    let fileName = files[i++],
-                        filePath;
-
-                    if (fileName) {
-                        filePath = dir + '/' + fileName;
-
-                        // inspect the file/directory
-                        fs.stat(filePath, (err, stat) => {
-                            if (stat && stat.isDirectory()) {
-                                // recursively crawl directory
-                                crawl(filePath, (err, res) => {
-                                    results = results.concat(res);
-                                    next();
-                                });
-                            }
-                            else {
-                                let dirItem = directoryItem(fileName, filePath, false);
-                                // only push video files
-                                if (['.avi', '.flv', '.divx', '.m4v', '.mkv', '.mp4', '.wmv'].indexOf(dirItem.ext) > -1) {
-                                    results.push(dirItem);
-                                }
-                                next();
-                            }
-                        });
-                    }
-                    else {
-                        return done(null, results);
-                    }
-                })();
+        glob(path.join(currentDir, '**/*.+(avi|flv|divx|m4v|mkv|mp4|wmv)'), (err, files) => {
+            files = files.map((file) => {
+                return directoryItem(file, currentDir, false);
             });
-        }
+
+            res.json({
+                path: currentDir,
+                files: files
+            });
+        });
     })
     .listen(8080, () => {
         console.log(`Server running at http://localhost:8080`);
