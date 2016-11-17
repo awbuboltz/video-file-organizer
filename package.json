@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node index test",
+    "start": "node index"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.14.0",
-    "lodash": "^4.17.1",
-    "walk": "^2.3.9"
+    "lodash": "^4.17.1"
   }
 }
