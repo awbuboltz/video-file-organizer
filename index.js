@@ -4,7 +4,11 @@ const _ = require('lodash'),
     fs = require('fs'),
     path = require('path'),
     app = express(),
-    rootDir = process.argv[2] === 'test'? `${process.cwd()}\\test\\directory` : 'C:\\Users\\Andy\\Torrents';
+    // read in config file as json
+    config = JSON.parse(fs.readFileSync('./config.json')),
+    // if "test" was passed as argument to node, rootdir is test/directory, else downloadDirectory from config
+    dir = process.argv.indexOf('test') > -1 ? 'testDownloadDirectory' : 'downloadDirectory',
+    rootDir = config[dir];
 
 app
     .use(express.static(process.cwd())) // app public directory
@@ -14,7 +18,7 @@ app
     })
     .get('/files', (req, res) => {
         const filePath = req.query.path || '',
-            currentDir = filePath ? path.join(rootDir, filePath) : rootDir;
+            currentDir = getCurrentDir(filePath);
 
         let data = {
             path: currentDir,
@@ -46,8 +50,7 @@ app
         });
     })
     .get('/filter', (req, res) => {
-        const filePath = req.query.path || '',
-            currentDir = filePath ? path.join(rootDir, filePath) : rootDir;
+        const currentDir = getCurrentDir(req.query.path);
 
         crawl(currentDir, (err, results) => {
             res.json({path: currentDir, files: results});
@@ -100,6 +103,9 @@ app
         console.log(`Server running at http://localhost:8080`);
     });
 
+function getCurrentDir(filePath) {
+    return filePath ? path.join(rootDir, filePath) : rootDir
+}
 
 function directoryItem(name, filePath, isDir) {
     return {
