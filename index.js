@@ -12,9 +12,9 @@ const _ = require('lodash'),
     rootDir = config[dir];
 
 app
-    .use(express.static(process.cwd())) // app public directory
+    .use(express.static(`${process.cwd()}/app`)) // app public directory
     .get('/', (req, res) => {
-        res.redirect('app/index.html');
+        res.redirect('index.html');
     })
     .get('/files', (req, res) => {
         const filePath = req.query.path || '',
