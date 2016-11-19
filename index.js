@@ -14,7 +14,7 @@ const _ = require('lodash'),
 app
     .use(express.static(process.cwd())) // app public directory
     .get('/', (req, res) => {
-        res.redirect('lib/index.html');
+        res.redirect('app/index.html');
     })
     .get('/files', (req, res) => {
         const filePath = req.query.path || '',
